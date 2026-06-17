@@ -16,8 +16,6 @@ htmlcov/
 node_modules/
 dist/
 dist-ssr/
-.next/
-.next
 *.local
 .eslintcache
 .stylelintcache
@@ -49,6 +47,3 @@ backend/knowledge/.chroma/
 
 # Eval outputs (optional - keep results local)
 eval/results.csv
-
-# Local database files
-*.db
