@@ -1,3 +1,14 @@
+---
+title: Astroagent
+emoji: 🚀
+colorFrom: green
+colorTo: pink
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # AstroAgent ✦ Aradhana
 
 An agentic AI astrology companion built with **LangGraph + Groq (LLaMA 3.3 70B) + React + TypeScript**. Computes real birth charts using live ephemeris data, provides daily transit readings, and answers astrology questions via a ChromaDB-backed RAG knowledge base — all through a warm, streaming conversational interface.
