@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, Wrench, Clock, AlertTriangle, Check } from 'lucide-react';
 import type { ToolCallEvent } from '../services/api';
 

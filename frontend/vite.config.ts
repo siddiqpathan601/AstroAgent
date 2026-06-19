@@ -7,5 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true
-  }
+  },
+  // Copy _redirects and other static files to dist/ for Cloudflare Pages
+  publicDir: 'public',
 })

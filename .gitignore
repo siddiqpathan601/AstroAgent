@@ -1,34 +1,71 @@
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 venv/
-backend/knowledge/.chroma/
 .venv/
+env/
+ENV/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 .pytest_cache/
 .coverage
 htmlcov/
-*.egg-info/
-.env
-.env.example
+.tox/
+.noserc
+nosetests.xml
+coverage.xml
+*.cover
+.mypy_cache/
+.ipynb_checkpoints/
 
-# Node / Frontend
+# ── Node / Frontend ───────────────────────────────────────────────────────────
 node_modules/
 dist/
 dist-ssr/
-*.local
+.vite/
+.npm/
 .eslintcache
 .stylelintcache
+.tsbuildinfo
 
-# Logs
+# ── Environment Variables ─────────────────────────────────────────────────────
+# Ignore all local env files that contain keys/secrets
+.env
+.env.local
+.env.*.local
+*.local
+
+# Allow committing the example file and production public config
+!.env.example
+!frontend/.env.production
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# IDE / Editor
+# ── IDE / Editors ─────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.suo
@@ -38,13 +75,16 @@ yarn-error.log*
 *.sw?
 .gemini/
 
-# OS
+# ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-# ChromaDB / Vector DB
+desktop.ini
+
+# ── ChromaDB / Vector DB ──────────────────────────────────────────────────────
 backend/knowledge/.chroma/
+chroma_store/
 *.bin
 *.sqlite3
 
-# Eval outputs (optional - keep results local)
+# ── Evaluation ────────────────────────────────────────────────────────────────
 eval/results.csv

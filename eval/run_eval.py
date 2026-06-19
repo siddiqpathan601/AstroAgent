@@ -1,11 +1,11 @@
 """
 AstroAgent Evaluation Harness
 
-Run with:  .\venv\Scripts\python.exe eval/run_eval.py
+Run with:  .\\venv\\Scripts\\python.exe eval/run_eval.py
            (from the project root, with venv activated)
 
 Loads test cases from eval/golden_set.jsonl, runs each through the /chat API,
-performs deterministic checks, optionally scores tone via Gemini LLM-as-judge,
+performs deterministic checks, optionally scores tone via Groq LLM-as-judge,
 prints a scorecard table, and appends results to eval/results.csv.
 """
 
@@ -129,30 +129,35 @@ def check_response_not_empty(result: dict) -> bool:
     return len(result.get("response", "")) > 20
 
 
-# ── LLM-as-judge (Gemini) ───────────────────────────────────────────────────
+# ── LLM-as-judge (Groq) ─────────────────────────────────────────────────────
 
 def score_tone_with_llm(response_text: str) -> float:
     """
-    Score tone_appropriateness on 1-5 using Gemini as judge.
+    Score tone_appropriateness on 1-5 using Groq LLaMA as judge.
     Returns -1.0 if the judge is unavailable.
     """
     try:
-        from google import genai
+        from langchain_groq import ChatGroq
+        from langchain_core.messages import HumanMessage
 
-        api_key = os.getenv("GEMINI_API_KEY", "")
+        api_key = os.getenv("GROQ_API_KEY", "")
         if not api_key:
             # Try loading from .env
             env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
             if os.path.exists(env_path):
                 with open(env_path) as f:
                     for line in f:
-                        if line.startswith("GEMINI_API_KEY="):
+                        if line.startswith("GROQ_API_KEY="):
                             api_key = line.strip().split("=", 1)[1]
 
         if not api_key:
             return -1.0
 
-        client = genai.Client(api_key=api_key)
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            temperature=0,
+            api_key=api_key,
+        )
 
         prompt = f"""You are evaluating the tone of an AI astrology assistant called Aradhana.
 
@@ -173,11 +178,8 @@ Response to evaluate:
 
 Reply with ONLY a single number (1-5), nothing else."""
 
-        result = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-        )
-        score_text = result.text.strip()
+        result = llm.invoke([HumanMessage(content=prompt)])
+        score_text = result.content.strip()
         # Extract the number
         for ch in score_text:
             if ch.isdigit():
@@ -308,7 +310,7 @@ def main():
         response_text = result.get("response", "")
         tokens = int(len(response_text.split()) * 1.3)
 
-        # LLM judge for tone
+        # LLM judge for tone (now using Groq)
         tone = score_tone_with_llm(response_text) if response_text else -1.0
 
         print(f"  tool_ok={tool_ok} json_ok={json_ok} no_cert={no_cert} "

@@ -1,96 +1,142 @@
-import React, { useState } from 'react';
-import ChatInterface from './components/ChatInterface';
-import { BirthDetailsForm, BirthDetailsSummary, type BirthDetails } from './components/BirthDetailsForm';
-import CelestialDashboard from './components/CelestialDashboard';
-import { Sparkles, Moon, Star } from 'lucide-react';
+import React, { lazy, Suspense } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { useAppStore } from './store/appStore';
+import { useCommandPalette } from './hooks/useCommandPalette';
+import Sidebar from './components/layout/Sidebar';
+import BottomNav from './components/layout/BottomNav';
+import CommandPalette from './components/layout/CommandPalette';
+import OnboardingFlow from './components/onboarding/OnboardingFlow';
+import { Skeleton, SkeletonCard } from './components/ui/Skeleton';
+import type { AppPage } from './types/user';
+
+// Code-split pages
+const TodayPage        = lazy(() => import('./pages/TodayPage'));
+const ChatPage         = lazy(() => import('./pages/ChatPage'));
+const MyChartPage      = lazy(() => import('./pages/MyChartPage'));
+const TransitsPage     = lazy(() => import('./pages/TransitsPage'));
+const LifeAreasPage    = lazy(() => import('./pages/LifeAreasPage'));
+const MoonPhasePage    = lazy(() => import('./pages/MoonPhasePage'));
+const JournalPage      = lazy(() => import('./pages/JournalPage'));
+const SavedReadingsPage= lazy(() => import('./pages/SavedReadingsPage'));
+const HistoryPage      = lazy(() => import('./pages/HistoryPage'));
+const SettingsPage     = lazy(() => import('./pages/SettingsPage'));
+
+function PageSuspense({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={
+      <div className="p-6 max-w-4xl mx-auto space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-40" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+        <SkeletonCard />
+      </div>
+    }>
+      {children}
+    </Suspense>
+  );
+}
+
+function PageRouter({ page }: { page: AppPage }) {
+  return (
+    <AnimatePresence mode="wait">
+      <PageSuspense key={page}>
+        {page === 'today'         && <TodayPage />}
+        {page === 'chat'          && <ChatPage />}
+        {page === 'chart'         && <MyChartPage />}
+        {page === 'transits'      && <TransitsPage />}
+        {page === 'life-areas'    && <LifeAreasPage />}
+        {page === 'moon'          && <MoonPhasePage />}
+        {page === 'journal'       && <JournalPage />}
+        {page === 'saved'         && <SavedReadingsPage />}
+        {page === 'history'       && <HistoryPage />}
+        {page === 'settings'      && <SettingsPage />}
+        {page === 'compatibility' && <CompatibilityPlaceholder />}
+      </PageSuspense>
+    </AnimatePresence>
+  );
+}
+
+function CompatibilityPlaceholder() {
+  return (
+    <div className="p-6 max-w-2xl mx-auto text-center py-20">
+      <div className="text-5xl mb-4">♥</div>
+      <h2 className="font-display text-2xl text-slate-200 mb-2">Compatibility Analysis</h2>
+      <p className="text-sm font-body text-slate-500">Synastry reports coming in a future update. Ask Aradhana about compatibility in the chat for now!</p>
+    </div>
+  );
+}
 
 export default function App() {
-  const [birthDetails, setBirthDetails] = useState<BirthDetails | null>(() => {
-    try {
-      const stored = localStorage.getItem('astroagent_birth_details');
-      return stored ? JSON.parse(stored) : null;
-    } catch { return null; }
-  });
-  const [showForm, setShowForm] = useState(!birthDetails);
-  const [computedChart, setComputedChart] = useState<any>(null);
-  const [computedTransits, setComputedTransits] = useState<any>(null);
+  const { activePage, onboardingComplete, sidebarExpanded } = useAppStore();
 
-  const handleBirthSubmit = (details: BirthDetails) => {
-    setBirthDetails(details);
-    setShowForm(false);
-    localStorage.setItem('astroagent_birth_details', JSON.stringify(details));
-  };
+  // Register ⌘K handler
+  useCommandPalette();
 
-  const handleEdit = () => setShowForm(true);
+  // Show onboarding if not complete
+  if (!onboardingComplete) {
+    return <OnboardingFlow />;
+  }
 
   return (
-    <div className="relative min-h-screen bg-[#02000f] text-slate-100 flex flex-col items-center justify-start p-4 md:p-8 overflow-y-auto">
-      {/* Soft, Calming Cosmic Background Glows */}
-      <div className="absolute top-[-30%] left-[-20%] w-[800px] h-[800px] rounded-full bg-indigo-950/20 cosmic-glow-1 pointer-events-none" />
-      <div className="absolute bottom-[-30%] right-[-20%] w-[800px] h-[800px] rounded-full bg-purple-950/20 cosmic-glow-2 pointer-events-none" />
+    <div className="min-h-screen bg-void text-slate-100 flex relative overflow-hidden">
+      {/* Cosmic background glows */}
+      <div className="fixed top-[-15%] left-[-5%] w-[700px] h-[700px] rounded-full bg-violet-950/20 cosmic-glow-1 pointer-events-none z-0" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-950/15 cosmic-glow-2 pointer-events-none z-0" />
+      <div className="fixed top-[40%] right-[10%] w-[300px] h-[300px] rounded-full bg-violet-900/10 cosmic-glow-3 pointer-events-none z-0" />
 
-      {/* Decorative Star Accents - Extremely subtle */}
-      <div className="absolute top-[15%] left-[8%] text-amber-200/10 animate-pulse pointer-events-none">
-        <Star className="w-5 h-5 fill-current" />
-      </div>
-      <div className="absolute bottom-[20%] right-[10%] text-indigo-400/10 animate-pulse pointer-events-none" style={{ animationDelay: '3s' }}>
-        <Star className="w-4 h-4 fill-current" />
-      </div>
-      <div className="absolute top-[25%] right-[12%] text-amber-200/15 animate-bounce pointer-events-none" style={{ animationDuration: '8s' }}>
-        <Sparkles className="w-4 h-4" />
+      {/* Sidebar (desktop) */}
+      <div className="hidden md:block relative z-40 flex-shrink-0" style={{ width: sidebarExpanded ? 240 : 64 }}>
+        <Sidebar />
       </div>
 
-      {/* Header Space */}
-      <header className="w-full max-w-6xl z-10 flex flex-col items-center gap-2 mb-6 mt-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/60 border border-indigo-500/10 text-indigo-300 text-[10px] font-mono tracking-widest uppercase">
-          <Moon className="w-3 h-3 text-amber-200/80" />
-          <span>Aradhana Astro Companion</span>
-        </div>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-100 mt-2 font-sans">
-          Astro<span className="text-amber-200/90 font-light">Agent</span>
-        </h1>
-        <p className="text-xs text-slate-400 font-light text-center max-w-sm">
-          A stateful AI astrologer companion powered by true planetary calculation & LangGraph.
-        </p>
-      </header>
-
-      {/* Main Layout Container */}
-      <main className={`w-full ${showForm ? 'max-w-xl' : 'max-w-6xl'} z-10 flex-1 flex flex-col items-center justify-center gap-6`}>
-        {showForm ? (
-          <BirthDetailsForm onSubmit={handleBirthSubmit} />
-        ) : (
-          <div className="w-full flex flex-col gap-6">
-            {birthDetails && (
-              <BirthDetailsSummary details={birthDetails} onEdit={handleEdit} />
-            )}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
-              {/* Chat Area (Left Side) */}
-              <div className="lg:col-span-6 flex flex-col">
-                <ChatInterface
-                  birthDetails={birthDetails}
-                  onChartComputed={setComputedChart}
-                  onTransitsComputed={setComputedTransits}
-                />
-              </div>
-              
-              {/* Right Panel (Planetary positions / transits) */}
-              <div className="lg:col-span-6 flex flex-col">
-                <CelestialDashboard
-                  chart={computedChart}
-                  transits={computedTransits}
-                />
-              </div>
+      {/* Main Content */}
+      <main
+        className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden z-10"
+        style={{ paddingBottom: '80px' }} // space for bottom nav on mobile
+      >
+        {/* Mobile top bar */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-violet-500/08 glass-dark sticky top-0 z-30">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-violet-800 flex items-center justify-center">
+              <span className="text-sm leading-none">☽</span>
             </div>
+            <span className="font-display text-base font-semibold text-gradient-gold">Celestia</span>
           </div>
-        )}
+          <button
+            onClick={() => useAppStore.getState().openCommandPalette()}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 glass rounded-lg border border-violet-500/12 text-xs font-body text-slate-500 hover:text-slate-300 transition-all"
+          >
+            <span>⌘</span><span>K</span>
+          </button>
+        </div>
+
+        {/* Desktop ⌘K hint in header */}
+        <div className="hidden md:flex items-center justify-end px-6 py-3 border-b border-violet-500/06 flex-shrink-0">
+          <button
+            onClick={() => useAppStore.getState().openCommandPalette()}
+            className="flex items-center gap-1.5 px-3 py-1.5 glass rounded-lg border border-violet-500/10 text-xs font-body text-slate-600 hover:text-slate-400 hover:border-violet-500/20 transition-all"
+          >
+            <span>⌘</span><span>K</span>
+            <span className="ml-1 text-slate-700">Search</span>
+          </button>
+        </div>
+
+        {/* Page content — scrollable */}
+        <div className={`flex-1 overflow-y-auto overflow-x-hidden ${activePage === 'chat' ? 'flex flex-col' : ''}`}>
+          <PageRouter page={activePage} />
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full max-w-6xl z-10 mt-8 mb-2 text-center border-t border-slate-900/60 pt-4">
-        <p className="text-[10px] text-slate-500 font-mono tracking-wide">
-          All calculations are mathematical models. Framework details are for introspection and guidance, never prediction.
-        </p>
-      </footer>
+      {/* Mobile bottom nav */}
+      <div className="md:hidden">
+        <BottomNav />
+      </div>
+
+      {/* Command palette overlay */}
+      <CommandPalette />
     </div>
   );
 }

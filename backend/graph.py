@@ -1,5 +1,5 @@
 """
-AstroAgent LangGraph workflow — powered by Google Gemini.
+AstroAgent LangGraph workflow — powered by Groq (LLaMA 3.3 70B).
 
 Graph structure:
     START → router_node → (conditional) → tool_node → agent_node → END
@@ -7,7 +7,7 @@ Graph structure:
 
 - router_node: classifies user intent via keyword heuristics
 - tool_node: dispatches to the correct astrology tool
-- agent_node: calls Gemini with full context (messages + tool output)
+- agent_node: calls Groq LLaMA 3.3 70B with full context (messages + tool output)
 """
 
 from typing import Literal
@@ -27,7 +27,7 @@ from backend.tools.astrology import (
     get_daily_transits,
     knowledge_lookup,
 )
-from backend.config import GEMINI_API_KEY, GROQ_API_KEY
+from backend.config import GROQ_API_KEY
 
 # ── System prompt ────────────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ Keep responses very concise, brief, and structured for quick understanding:
 
 Avoid fluff and repetition. Keep the text engaging, direct, and warm."""
 
-# ── LLM instance (Gemini) ────────────────────────────────────────────────────
+# ── LLM instance (Groq LLaMA 3.3 70B) ──────────────────────────────────────
 
 _llm = None
 
@@ -279,10 +279,10 @@ def tool_node(state: AstroState) -> dict:
     }
 
 
-# ── Node: Agent (Gemini LLM) ────────────────────────────────────────────────
+# ── Node: Agent (Groq LLaMA 3.3 70B) ──────────────────────────────────────
 
 def agent_node(state: AstroState) -> dict:
-    """Generate the final response using a real Gemini LLM call."""
+    """Generate the final response using Groq LLaMA 3.3 70B."""
     start = time.time()
     llm = _get_llm()
 
@@ -348,11 +348,11 @@ def agent_node(state: AstroState) -> dict:
         response = llm.invoke(lc_messages)
         response_content = response.content
     except Exception as e:
-        print(f"[AstroAgent Agent] Gemini call failed: {e}")
+        print(f"[AstroAgent Agent] Groq call failed: {e}")
         response_content = _fallback_response(state)
 
     elapsed = time.time() - start
-    print(f"[AstroAgent Agent] Gemini response generated ({elapsed * 1000:.1f}ms)")
+    print(f"[AstroAgent Agent] Groq response generated ({elapsed * 1000:.1f}ms)")
 
     new_message = {"role": "assistant", "content": response_content}
     return {

@@ -1,6 +1,6 @@
 """
 API routes for AstroAgent chat — both sync and streaming (SSE) endpoints.
-Powered by Google Gemini via langchain-google-genai.
+Powered by Groq (LLaMA 3.3 70B) via langchain-groq.
 """
 
 import json
@@ -14,7 +14,6 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 from backend.graph import app_graph, SYSTEM_PROMPT, _get_llm
-from backend.config import GEMINI_API_KEY
 
 router = APIRouter()
 
@@ -83,7 +82,7 @@ async def stream_chat(request: ChatRequest):
 
     Event types:
         data: {"tool_call": {...}}   — tool activity info
-        data: {"token": "..."}       — streamed Gemini token
+        data: {"token": "..."}       — streamed Groq token
         data: {"done": true}         — stream complete
         data: {"error": "..."}       — error event
     """
@@ -125,7 +124,7 @@ async def stream_chat(request: ChatRequest):
                 }
                 yield f"data: {json.dumps(tool_data)}\n\n"
 
-            # ── Step 2: Stream the Gemini response ───────────────────
+            # ── Step 2: Stream the Groq response ────────────────────────
             llm = _get_llm()
 
             lc_messages = [SystemMessage(content=SYSTEM_PROMPT)]
@@ -169,7 +168,7 @@ async def stream_chat(request: ChatRequest):
                     )
                 )
 
-            # Stream tokens from Gemini
+            # Stream tokens from Groq
             async for chunk in llm.astream(lc_messages):
                 token = chunk.content
                 if token:

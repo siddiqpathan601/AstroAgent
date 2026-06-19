@@ -1,6 +1,11 @@
 """Quick smoke test for the backend tools."""
 import sys
 sys.path.insert(0, ".")
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
 
 print("Testing tools import...")
 from backend.tools.astrology import geocode_place, compute_birth_chart, get_daily_transits, knowledge_lookup

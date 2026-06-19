@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Sparkles, AlertCircle, Loader, Trash2, Moon } from 'lucide-react';
-import { streamChat, type ToolCallEvent, type BirthDetails } from '../services/api';
+import { streamChat, type ToolCallEvent } from '../services/api';
+import type { BirthDetails } from '../types/user';
 import ToolActivityPanel from './ToolActivityPanel';
 
 interface Message {

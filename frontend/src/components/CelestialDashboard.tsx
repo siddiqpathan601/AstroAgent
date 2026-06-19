@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Sun, Moon, Sparkles, Compass, Activity, Flame, Droplets, Wind, Mountain, TrendingUp, Info } from 'lucide-react';
 
 interface Placement {

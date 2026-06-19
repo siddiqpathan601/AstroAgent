@@ -142,6 +142,14 @@ The frontend runs at `http://localhost:5173`. Open it in your browser — you'll
 
 ---
 
+## Deployment
+
+AstroAgent is fully configured for cloud deployment:
+- **Cloudflare (Frontend + Backend):** For deploying the React frontend on Cloudflare Pages and configuring the FastAPI backend via custom domains or tunnels, see [CLOUDFLARE_DEPLOYMENT.md](file:///c:/Users/siddi/Desktop/AstroAgent/CLOUDFLARE_DEPLOYMENT.md).
+- **Multi-Cloud (Render/Railway/Vercel/Netlify):** For step-by-step guides on deploying the backend to Render/Railway and the frontend to Vercel/Netlify, see the [Deployment Guide](file:///C:/Users/siddi/.gemini/antigravity-ide/brain/6be286a7-a6e1-4296-a4d1-70e2f40df37c/deployment_guide.md).
+
+---
+
 ## Project Structure
 
 ```
